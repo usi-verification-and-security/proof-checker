@@ -43,7 +43,7 @@ fi
 while [ $# -gt 0 ]; do
     echo $1;
     if [[ -a $1 ]]; then
-        sh -c "ulimit -St 60; ${proofchecker} -o /dev/null $1 \
+        sh -c "ulimit -St 60; ${proofchecker} -t $1 \
             > $PROOFCHECKERDIR/$(basename $1).expected.out \
             2> $PROOFCHECKERDIR/$(basename $1).expected.err";
     else

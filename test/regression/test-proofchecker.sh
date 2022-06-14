@@ -45,7 +45,7 @@ trap "rm -rf $tmpdir" EXIT
 
 for file in instances/*.osmt; do
     name=$(basename $file)
-    sh -c "ulimit -St 60; ${proofchecker} -o /dev/null $file > $tmpdir/$name.out 2>$tmpdir/$name.err" 2>/dev/null
+    sh -c "ulimit -St 60; ${proofchecker} -t $file > $tmpdir/$name.out 2>$tmpdir/$name.err" 2>/dev/null
     diff -q $tmpdir/$name.out $PROOFCHECKERDIR/$name.expected.out
     if [ $? != 0 ]; then
         echo "stdout differs for benchmark $file"
