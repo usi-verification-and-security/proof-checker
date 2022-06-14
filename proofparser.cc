@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cassert>
 #include "base64.h"
 
 class ParseException : public std::exception {
