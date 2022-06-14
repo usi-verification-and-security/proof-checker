@@ -57,12 +57,37 @@ ufPropOut="ufProp.out"
 
 function checkTrail() {
     trail=$1
-    logic=$2
 
-    $SCRIPTDIR/proofparser -t $trail > $TMPDIR/proof.tar.bz2
+    $SCRIPTDIR/proofparser \
+        -o $TMPDIR/proof.tar.bz2 \
+        $trail \
+        > $TMPDIR/parser.out
+
+    if (grep '^sat' $TMPDIR/parser.out > /dev/null); then
+        echo "sat"
+        return 0
+    elif (grep '^invalid' $TMPDIR/parser.out > /dev/null); then
+        echo "invalid"
+        return 1
+    elif (grep '^unknown' $TMPDIR/parser.out > /dev/null); then
+        echo "unknown"
+        return 0
+    elif (grep -v '^unsat' $TMPDIR/parser.out); then
+        echo "invalid"
+        return 1
+    fi
+
+    logic=$(grep '^unsat' $TMPDIR/parser.out |awk '{print $2}')
 
     cd $TMPDIR;
-    tar jxf proof.tar.bz2
+    tar jxf proof.tar.bz2 > /dev/null 2>&1
+
+    # The compressed trail is not a .tar.bz2
+    if [ $? -ne 0 ]; then
+        echo "invalid"
+        return 0
+    fi
+
     cd proof
 
     python3 $SCRIPTDIR/check_cnfization.py &> $cnfizationOut
@@ -71,46 +96,45 @@ function checkTrail() {
     if [[ "$logic" == "QF_LRA" ]]; then
         python3 $SCRIPTDIR/check_lra_lraTheory.py &> $lraOut
         python3 $SCRIPTDIR/check_lraTheoryProp.py &> $lraPropOut
-    fi
-
-    if [[ "$logic" == "QF_LIA" ]]; then
+    elif [[ "$logic" == "QF_LIA" ]]; then
         python3 $SCRIPTDIR/check_lia_lraTheory.py &> $lraOut
         python3 $SCRIPTDIR/check_lraTheoryProp.py &> $lraPropOut
         python3 $SCRIPTDIR/check_liaTheory.py &> $liaOut
         python3 $SCRIPTDIR/check_liaTheoryProp.py &> $liaPropOut
-    fi
-
-    if [[ "$logic" == "QF_UF" ]]; then
+    elif [[ "$logic" == "QF_UF" ]]; then
         python3 $SCRIPTDIR/check_ufTheory.py &> $ufOut
         python3 $SCRIPTDIR/check_ufTheoryProp.py &> $ufPropOut
     fi
 
-    if [[ "$logic" == "QF_LRA" ]] && \
-            grep -Fqw "True" $cnfizationOut && \
-            grep -Fqw "s VERIFIED" $dratOut && \
-            grep -Fqw "True" $lraOut && \
-            grep -Fqw "True" $lraPropOut; then
-        return 0
-    elif [[ "$theory" == "QF_LIA" ]] && \
-            grep -Fqw "True" $cnfizationOut && \
-            grep -Fqw "s VERIFIED" $dratOut && \
-            grep -Fqw "True" $lraOut && \
-            grep -Fqw "True" $lraPropOut && \
-            grep -Fqw "True" $liaOut && \
-            grep -Fqw "True" $liaPropOut; then
-        return 0
-    elif [[ "$logic" == "QF_UF" ]] && \
-            grep -Fqw "True" $cnfizationOut && \
-            grep -Fqw "s VERIFIED" $dratOut && \
-            grep -Fqw "True" $ufOut && \
-            grep -Fqw "True" $ufPropOut; then
-        return 0
-    else
-#        echo "Invalid trail: $trail"
-        return 1
+    if [[ "$logic" == "QF_LRA" ]]; then
+        if (grep -Fqw "True" $cnfizationOut && \
+                grep -Fqw "s VERIFIED" $dratOut && \
+                grep -Fqw "True" $lraOut && \
+                grep -Fqw "True" $lraPropOut); then
+            echo "valid"
+            return 0
+        fi
+    elif [[ "$theory" == "QF_LIA" ]]; then
+       if (grep -Fqw "True" $cnfizationOut && \
+                grep -Fqw "s VERIFIED" $dratOut && \
+                grep -Fqw "True" $lraOut && \
+                grep -Fqw "True" $lraPropOut && \
+                grep -Fqw "True" $liaOut && \
+                grep -Fqw "True" $liaPropOut); then
+            echo "valid"
+            return 0
+        fi
+    elif [[ "$logic" == "QF_UF" ]]; then
+        if (grep -Fqw "True" $cnfizationOut && \
+                grep -Fqw "s VERIFIED" $dratOut && \
+                grep -Fqw "True" $ufOut && \
+                grep -Fqw "True" $ufPropOut); then
+            echo "valid"
+            return 0
+        fi
     fi
 
-#    echo "Problem testing $trail"
+    echo "invalid"
     return 1
 }
 
@@ -118,16 +142,12 @@ function checkTrail() {
 
 ok=false
 
-logic=$($SCRIPTDIR/proofparser -l $trail)
-
-checkTrail $trail $logic && ok=true
+checkTrail $trail && ok=true
 
 #########################
 
 if [[ $ok == true ]]; then
-    echo "holey"
     exit 0;
 else
-    echo "invalid"
     exit 1;
 fi
