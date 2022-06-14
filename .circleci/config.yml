@@ -1,0 +1,42 @@
+version: 2.1
+jobs:
+  build-recent:
+    docker:
+      - image: archlinux:latest
+        auth:
+          username: mybockerhub-user
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          CMAKE_BUILD_TYPE: Debug
+          FLAGS: -Wall -Wextra -Werror
+          LD_LIBRARY_PATH: /usr/local/lib
+    steps:
+      - run:
+          name: install dependencies
+          command: pacman --noconfirm -Syu --noprogressbar --needed git cmake python make clang core/diffutils inetutils
+      - checkout
+      - run:
+          name: build proofchecker
+          command: |
+            mkdir build
+            cd build
+            cmake ..
+            make install
+      - run:
+          name: regression test proofparser
+          command: |
+            cd test/regression
+            ./test-proofparser.sh /usr/local/bin/proofparser
+      - run:
+          name: regression test proofchecker
+          command: |
+            cd test/regression
+            ./test-proofchecker.sh /usr/local/bin/proof-check.sh
+
+workflows:
+  build-test:
+    jobs:
+      - build-recent:
+        filters: &filters-build-test
+        tags:
+          only: /^v.*/
