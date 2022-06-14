@@ -1,0 +1,2 @@
+unsat
+(proof QF_UF this shouldn't parse)
