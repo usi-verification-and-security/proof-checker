@@ -29,7 +29,7 @@ if [ -z $proofparser ]; then
 fi
 
 echo "Adding as follows:"
-echo " - proofparser: $proofparser ($date -r ${proofparser}))"
+echo " - proofparser: $proofparser ($(date -r ${proofparser}))"
 echo " - files: $@"
 
 echo "Is this ok?"
