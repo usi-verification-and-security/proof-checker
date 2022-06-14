@@ -27,6 +27,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(drat-trim)
 install(IMPORTED_RUNTIME_ARTIFACTS
         drat-trim-bin
+        base64
 )
 
 set_target_properties(ProofParser-bin PROPERTIES
