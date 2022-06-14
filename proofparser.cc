@@ -26,12 +26,12 @@ std::pair<status_t, std::string_view> getStatusFromProof(std::string_view const 
 
     auto status = std::string_view(startIter, endIter-startIter);
     auto remainingString = std::string_view(proofString.data() + endOfInterestingStringIndex);
-    if (status == "sat") {
+    if (status == std::string_view("sat")) {
         return {status_t::sat, proofString.data() + firstTrailingWhitespaceOrParenthesis};
-    } else if (status == "unsat") {
+    } else if (status == std::string_view("unsat")) {
         return {status_t::unsat, remainingString};
-    } else if (status == "unknown") {
-        return {status_t::unsat, remainingString};
+    } else if (status == std::string_view("unknown")) {
+        return {status_t::unknown, remainingString};
     } else {
         throw ParseException("Error: unrecognizable status");
     }
@@ -40,7 +40,7 @@ std::pair<status_t, std::string_view> getStatusFromProof(std::string_view const 
 std::pair<std::string_view,std::string_view> getLogicFromProof(std::string_view const proofString) {
     auto initPos = proofString.find("(proof ");
     if (initPos == std::string::npos) {
-        throw ParseException("Error: proof not found");
+        return {{}, {}};
     }
 
     auto logicStart = proofString.find_first_not_of(" \t", initPos + sizeof("(proof"));
@@ -60,8 +60,8 @@ std::string_view parseProof(std::string_view const proofString) {
 
     auto proofStart = proofString.find_first_not_of(" \t\n\r");
 
-    if (proofStart == std::string::npos){
-        throw ParseException("Error: logic not found");
+    if (proofStart == std::string::npos) {
+        return {}; // proof not found
     }
 
     if (proofString[proofStart] != '|') {
@@ -98,18 +98,27 @@ int main(int argc, char ** argv) {
         } else if (status == status_t::sat) {
             std::cout << "sat" << std::endl;
         } else {
+            assert(status == status_t::unsat);
             auto [logic, trail] = getLogicFromProof(trailEnvelope);
-            std::string decodedProof = base64_decode(parseProof(trail));
-            std::ofstream decodedProofFile(argv[2]);
-            decodedProofFile << decodedProof;
-            decodedProofFile.close();
-            std::cout << "unsat" << ' ' << logic << std::endl;
+            if (logic.empty() and trail.empty()) {
+                std::cout << "unknown" << std::endl;
+            } else {
+                auto strippedTrail = parseProof(trail);
+                if (strippedTrail.empty()) {
+                    std::cout << "unknown" << std::endl;
+                }
+                std::string decodedProof = base64_decode(strippedTrail);
+                std::ofstream decodedProofFile(argv[2]);
+                decodedProofFile << decodedProof;
+                decodedProofFile.close();
+                std::cout << "unsat" << ' ' << logic << std::endl;
+            }
         }
     } catch (ParseException & e) {
-        std::cout << "unknown\n" << e.what() << std::endl;
+        std::cout << "invalid\n" << e.what() << std::endl;
         return 1;
     } catch (Base64Exception & e) {
-        std::cout << "unknown\n" << e.what() << std::endl;
+        std::cout << "invalid\n" << e.what() << std::endl;
         return 1;
     }
 }
