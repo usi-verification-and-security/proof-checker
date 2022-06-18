@@ -114,7 +114,7 @@ function checkTrail() {
             echo "valid"
             return 0
         fi
-    elif [[ "$theory" == "QF_LIA" ]]; then
+    elif [[ "$logic" == "QF_LIA" ]]; then
        if (grep -Fqw "True" $cnfizationOut && \
                 grep -Fqw "s VERIFIED" $dratOut && \
                 grep -Fqw "True" $lraOut && \
