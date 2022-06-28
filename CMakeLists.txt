@@ -8,6 +8,8 @@ project(proofchecker VERSION ${PROOFCHECKER_VERSION} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
+option(STATIC_BUILD "Build statically linked binary" ON)
+
 include(GNUInstallDirs)
 
 add_executable(ProofParser-bin proofparser.cc)
@@ -35,7 +37,12 @@ set_target_properties(ProofParser-bin PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-target_link_libraries(ProofParser-bin PUBLIC base64)
+if (STATIC_BUILD)
+    include_directories(${base64_SOURCE_DIR})
+    target_sources(ProofParser-bin PRIVATE $<TARGET_OBJECTS:base64>)
+else ()
+    target_link_libraries(ProofParser-bin PUBLIC base64)
+endif ()
 
 install(TARGETS ProofParser-bin)
 
