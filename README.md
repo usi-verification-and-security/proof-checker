@@ -7,6 +7,10 @@ producing version of opensmt.
 
 ## installation
 
+The system requires a c++-17 compiler, python3, and standard unix tools
+such as `tar`, `bash`, `git` and `cmake` to be installed.  Non-trivial
+external dependencies (see below) are fetched by `cmake`.
+
 ```
 mkdir build
 cd build
@@ -38,5 +42,11 @@ For more details on the technology, please check our
 Natasha Sharygina: Theory-Specific Proof Steps Witnessing Correctness of
 SMT Executions.  DAC 2021: 541-546*
 
+## Credits
 
+Notable external dependencies include Marijn Heule's [`drat`
+checker](https://github.com/marijnheule/drat-trim) and Rene
+Nyffenegger's
+[cpp-base64](https://github.com/ReneNyffenegger/cpp-base64).
 
+Much of the proof-checking scripts were written by Rodrigo Otoni.
