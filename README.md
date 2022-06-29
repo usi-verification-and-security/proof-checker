@@ -27,8 +27,8 @@ The proof checker is now compatible with
 [smt-comp](https://smt-comp.github.io/2022/)'s proof track.  In the
 current version the compatibility is a little artificial.  It's simply a
 base64-encoded version of a .tar.bz2 file of the "real" proof.  The
-"real" proof on the other hand is constructed as the solver runs in a
-sub-folder of the working directory called proof.  The proof checker's
+"real" proof on the other hand is constructed in a sub-folder of the
+working directory called proof as the solver runs.  The proof checker's
 main binary is `proof-check.sh`, it reads the encoded file, decompresses
 it, and runs the modular proof / trail checkers.
 
