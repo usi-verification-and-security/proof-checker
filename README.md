@@ -33,7 +33,7 @@ main binary is `proof-check.sh`, it reads the encoded file, decompresses
 it, and runs the modular proof / trail checkers.
 
 For more details on the technology, please check our
-[https://ieeexplore.ieee.org/document/9586272](DAC 2021 paper):
+[DAC 2021 paper](https://ieeexplore.ieee.org/document/9586272):
 *Rodrigo Otoni, Martin Blicha, Patrick Eugster, Antti E. J. Hyvärinen,
 Natasha Sharygina: Theory-Specific Proof Steps Witnessing Correctness of
 SMT Executions.  DAC 2021: 541-546*
